@@ -11,10 +11,10 @@
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 
-float servo_offset_1 = 6.3;
-float servo_offset_2 = 2.4;
-float servo_offset_3 = -2.56;
-float servo_offset_4 = -2.61;
+float servo_offset_1 = 3.5;
+float servo_offset_2 = 9;
+float servo_offset_3 = -5;
+float servo_offset_4 = -8;
 
 double body_roll=0;
 
@@ -28,8 +28,8 @@ double base_width = 0.3523;
 double l1 = 112.5, l2=225.0, l3=75, l4=150, l5=75, d=75;
 double joint_angles[6];
 
-double dummy_roll_cmd=0;
-double roll_cmd;
+// double dummy_roll=0;
+double roll;
 int flag=1;
 
 int inverse_kinematics(double xe, double ye, int left_leg_param) {
@@ -88,19 +88,18 @@ void setupServoIK(){
     pwm.setPWMFreq(SERVO_FREQ);
     delay(10);
   }
-
-void ServoIK(float roll_cmd, float body_height){ //roll in degrees, body height in mm
-    double x_pos=30.0;
-    // Serial.println("roll_cmd: " + String(roll_cmd));
-    roll_cmd = radians(roll_cmd);
-    if(roll_cmd < 0){
-      double left_leg_length_redn = base_width*tan(-roll_cmd);
+// cmd.roll_cmd, cmd.pitch_cmd, cmd.body_height_cmd, cmd.x_pos_cmd
+void ServoIK(float roll, float pitch, float body_height, float x_pos){ //roll in degrees, body height in mm
+    // Serial.println("roll: " + String(roll));
+    roll = radians(roll);
+    if(roll < 0){
+      double left_leg_length_redn = base_width*tan(-roll);
       left_leg_length = fmin(fmax(min_leg_length,(body_height-left_leg_length_redn*1000)),body_height);
       int result = inverse_kinematics(x_pos, left_leg_length, 1);
       // Serial.println("Result: "+ String(result));
       if(result){
-        int us_1 = map(joint_angles[4]+servo_offset_1, 0,90,USMIN,USMAX);
-        int us_2 = map(joint_angles[5]+servo_offset_2, 0,90,USMIN,USMAX);
+        int us_1 = map(joint_angles[4]-servo_offset_1, 0,90,USMIN,USMAX);
+        int us_2 = map(joint_angles[5]-servo_offset_2, 0,90,USMIN,USMAX);
         pwm.writeMicroseconds(0, us_1);
         pwm.writeMicroseconds(1, us_2);
         // Serial.println("Joint_angles_left: " + String(joint_angles[4]) + ", "+ joint_angles[5]);
@@ -110,8 +109,8 @@ void ServoIK(float roll_cmd, float body_height){ //roll in degrees, body height 
       result = inverse_kinematics(x_pos, right_leg_length, 0);
       // Serial.println("Result: "+ String(result));
       if(result){
-        int us_1 = map(joint_angles[4]+servo_offset_3, 0,90,USMIN,USMAX);
-        int us_2 = map(joint_angles[5]+servo_offset_4, 0,90,USMIN,USMAX);
+        int us_1 = map(joint_angles[4]-servo_offset_3, 0,90,USMIN,USMAX);
+        int us_2 = map(joint_angles[5]-servo_offset_4, 0,90,USMIN,USMAX);
         pwm.writeMicroseconds(2, us_1);
         pwm.writeMicroseconds(3, us_2);
         // Serial.println("Joint_angles_right: " + String(joint_angles[4]) + ", "+ joint_angles[5]);
@@ -122,20 +121,20 @@ void ServoIK(float roll_cmd, float body_height){ //roll in degrees, body height 
       int result = inverse_kinematics(x_pos, left_leg_length, 1);
       // Serial.println("Result: "+ String(result));
       if(result){
-        int us_1 = map(joint_angles[4]+servo_offset_1, 0,90,USMIN,USMAX);
-        int us_2 = map(joint_angles[5]+servo_offset_2, 0,90,USMIN,USMAX);
+        int us_1 = map(joint_angles[4]-servo_offset_1, 0,90,USMIN,USMAX);
+        int us_2 = map(joint_angles[5]-servo_offset_2, 0,90,USMIN,USMAX);
         pwm.writeMicroseconds(0, us_1);
         pwm.writeMicroseconds(1, us_2);
         // Serial.println("Joint_angles_left: " + String(joint_angles[4]) + ", "+ joint_angles[5]);
       }
   
-      double right_leg_length_redn = base_width*tan(roll_cmd);
+      double right_leg_length_redn = base_width*tan(roll);
       right_leg_length = fmin(fmax(min_leg_length,(body_height-right_leg_length_redn*1000)),body_height);
       result = inverse_kinematics(x_pos, right_leg_length, 0);
       // Serial.println("Result: "+ String(result));
       if(result){
-        int us_1 = map(joint_angles[4]+servo_offset_3, 0,90,USMIN,USMAX);
-        int us_2 = map(joint_angles[5]+servo_offset_4, 0,90,USMIN,USMAX);
+        int us_1 = map(joint_angles[4]-servo_offset_3, 0,90,USMIN,USMAX);
+        int us_2 = map(joint_angles[5]-servo_offset_4, 0,90,USMIN,USMAX);
         pwm.writeMicroseconds(2, us_1);
         pwm.writeMicroseconds(3, us_2);
         // Serial.println("Joint_angles_right: " + String(joint_angles[4]) + ", "+ joint_angles[5]);
