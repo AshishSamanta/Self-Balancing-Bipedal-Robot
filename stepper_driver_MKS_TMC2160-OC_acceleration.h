@@ -11,24 +11,25 @@
 
 // --- Stepper configuration ---
 const int STEPS_PER_REV = 12800; // steps per revolution
-const int PWM_RESOLUTION = 1;
+const int PWM_RESOLUTION = 1;//could be 8bits but we are only using this for on and off
+
 
 // --- LEDC channels ---
 const int CHANNEL1 = 0;
-const int CHANNEL2 = 1;
+const int CHANNEL2 = 1; 
 
 // --- Physical parameters ---
 const float r = 0.145 / 2.0;  // wheel radius (m)
 const float L = 0.41;         // wheel separation (m)
 
 // --- Internal state ---
-float omega_motor1 = 0.0f;   // rad/s
-float omega_motor2 = 0.0f;   // rad/s
-float alpha_motor1 = 0.0f;   // rad/s²
-float alpha_motor2 = 0.0f;   // rad/s²
+float omega_motor1 = 0.0;   // rad/s
+float omega_motor2 = 0.0;   // rad/s
+float alpha_motor1 = 0.0;   // rad/s²
+float alpha_motor2 = 0.0;   // rad/s²
 
-const float dt = 0.001f;     // 1 ms loop period (1000 Hz)
-const float MAX_OMEGA = 20.0f; // rad/s limit for safety
+const float dt = 0.001;     // 1 ms loop period (1000 Hz)
+const float MAX_OMEGA = 20.0; // rad/s limit for safety
 
 struct DriveVel {
     float lin_vel;
@@ -91,8 +92,8 @@ void motor_driver_update_from_accel() {
     else ledcWrite(CHANNEL2, 0);
 
     // Compute drive velocities
-    // drive_vel.lin_vel = r * (omega_motor1 + omega_motor2) * 0.5f;
-    // drive_vel.ang_vel = r * (omega_motor2 - omega_motor1) / L;
-}
+    drive_vel.lin_vel = r * (omega_motor1 + omega_motor2) * 0.5;
+    drive_vel.ang_vel = r * (omega_motor2 - omega_motor1) / L;
+// }
 
 #endif // MOTOR_DRIVER_LEDC_H

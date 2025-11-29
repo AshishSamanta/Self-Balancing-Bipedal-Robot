@@ -2,7 +2,7 @@
 #define IMU_SENSOR_ISM330DHCX_H
 
 #include <SPI.h>
-#include "SparkFun_ISM330DHCX.h"
+#include <SparkFun_ISM330DHCX.h>
 
 // ---------- STRUCT DEFINITION ----------
 struct IMUData {
@@ -29,8 +29,9 @@ static float gyroOffsetX = 0, gyroOffsetY = 0, gyroOffsetZ = 0;
 
 static unsigned long prevMicros = 0;
 
-static const float alphaAcc = 0.02;   // accel anti smoothing
-static const float alphaGyro = 0.02; // gyro anti smoothing
+static const float alphaAcc = 0.02;   // accel anti smoothing exponential filter hai 
+static const float alphaGyro = 0.02; // gyro anti smoothing exponential filter hai
+
 
 static float roll_rad, pitch_rad;
 static float loopFreq = 0;
@@ -87,8 +88,8 @@ void calibrateGyro(int numSamples = 500) {
 
   Serial.print("Gyro calibration done. Offsets: ");
   Serial.print("X="); Serial.print(gyroOffsetX);
-  Serial.print(" Y="); Serial.print(gyroOffsetY);
-  Serial.print(" Z="); Serial.println(gyroOffsetZ);
+  Serial.print("Y="); Serial.print(gyroOffsetY);
+  Serial.print("Z="); Serial.println(gyroOffsetZ);
 }
 
 IMUData updateIMU(bool &valid) {
@@ -102,7 +103,7 @@ IMUData updateIMU(bool &valid) {
   myISM.getAccel(&accelData);
   myISM.getGyro(&gyroData);
 
-  // --- Gyroscope (mdps → rad/s) ---
+  // --- Gyroscope (mdps → degree/s) ---
   float gX = (gyroData.xData - gyroOffsetX) * 0.001f;
   float gY = (gyroData.yData - gyroOffsetY) * 0.001f;
   float gZ = (gyroData.zData - gyroOffsetZ) * 0.001f;

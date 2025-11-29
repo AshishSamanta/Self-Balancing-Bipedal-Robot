@@ -1,16 +1,16 @@
 #include "stepper_driver_MKS_TMC2160-OC_acceleration.h"
 #include "servo_ik.h"
 #include "imu_sensor_ISM330DHCX.h"
-#include <Wire.h>
+#include <Wire.h> //i2c protocols header file
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "HC-12.h"
 
 double imu_freq = 0;
-double freq = 1000; // approximate measured imu_frq is 1000hz
+double freq = 1000; // approximate measured frq is 1000hz
 
-float Acceleration_limits = 50;
-// Timing diagnostics (in microseconds)
+float Acceleration_limits = 50;// rad/sec^2
+
 volatile unsigned long loop_dt = 0;
 volatile unsigned long servo_dt = 0;
 volatile unsigned long imu_dt   = 0;
@@ -44,6 +44,10 @@ float Kd_theta = 1.25;
 float Ki_theta = 0.0005;
 float theta_integral = 0.0;
 double theta_filtered = 0.0;
+
+double kp_theta_height_factor = 0.045;
+double Kd_theta_height_factor = 0.00608;
+double ki_theta_height_factor = 0.0001;
 
 float Kp_vel = -2.0;
 float Kd_vel = 0.0;
@@ -242,48 +246,7 @@ void ControlTask(void *pvParameters) {
       unsigned long current_print_time = millis();
       if((current_print_time - lastPrintTime) > printInterval){
 
-        // Serial.print(10); Serial.print("\t");
-        // Serial.print(-10); Serial.print("\t");
-
-        // Serial.print("[HC12] Parsed control data:");
-        // Serial.printf("  lin_vel: %.3f\n", ctrlData.lin_vel);
-        // Serial.printf("  ang_vel: %.3f\n", ctrlData.ang_vel);
-        // Serial.printf("  roll: %d, pitch: %d, jump: %d\n",
-        //               ctrlData.roll, ctrlData.pitch, ctrlData.jump);
-        // Serial.printf("  reset_roll_pitch: %d, disable_movement: %d, reset_all: %d\n",
-        //               ctrlData.reset_roll_pitch, ctrlData.disable_movement, ctrlData.reset_all);
-        // Serial.printf("  dec_height: %d, inc_height: %d\n",
-        //               ctrlData.decrease_height, ctrlData.increase_height);
-        // Serial.printf("  tune_up: %d, tune_down: %d\n",
-        //               ctrlData.tune_level_up, ctrlData.tune_level_down);
-        // // Serial.print("  movement disabled: ");
-        // Serial.print(movement_disabled);
-        // Serial.print("\t");
-        // // Serial.print("  reset_active: ");
-        // Serial.print(reset_roll_pitch_active);
-        // Serial.print("\t");
-        // // Serial.print(" roll: ");
-        // Serial.print(cmd.hull_roll_cmd);
-        // Serial.print("\t");
-        // // Serial.print(" lin vel: ");
-        // Serial.print(cmd.hull_pitch_cmd);
-        // Serial.print("\t");
-        // // Serial.print(" hull_pitch: ");
-        // Serial.print(cmd.body_height_cmd);
-        // Serial.print("\t");
-        // // Serial.print(" x pos: ");
-        // Serial.print(cmd.x_pos_cmd);
-        // Serial.print("\t");
-        // // Serial.print(" L accel :: R accel (");
-        // // Serial.print(left_accel);
-        // // Serial.print(" :: ");
-        // // Serial.print(right_accel);
-        // // Serial.println(")");
-        // // Serial.print("traget_pitch: ");
-        // Serial.print(target_pitch);
-        // Serial.print("\t");
-        // // Serial.print("error");
-        // Serial.println(error);
+        
         hc12PeriodicSend((double)movement_disabled, (double)reset_roll_pitch_active, (double)cmd.hull_roll_cmd, (double)error);
         lastPrintTime = current_print_time;
       }

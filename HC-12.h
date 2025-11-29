@@ -1,11 +1,11 @@
 #ifndef HC12_INTERFACE_H
 #define HC12_INTERFACE_H
 
-#include <Arduino.h>
+#include <Arduino.h>//only required when run in vs code and not required when run in arduino ide
 
 // --- HC-12 pin configuration ---
 #define HC12_RX 16
-#define HC12_TX 17
+#define HC12_TX 17 //this module works on UART protocol pe kam karta hai 
 
 // --- Data structure for received control values ---
 struct ControlData {
@@ -27,14 +27,15 @@ struct ControlData {
 ControlData ctrlData;
 
 // --- Internal variables ---
-String hc12_rxBuffer = "";
+String hc12_rxBuffer = "";// only an empty string that is used for stored
 unsigned long lastHCSend = 0;
-const unsigned long hc12SendInterval = 20;  // ms
+const unsigned long hc12SendInterval = 20;  // ms intervals for sending that is 50 hz
 int hc12Counter = 0;
 
 // --- Initialization ---
 void initHC12() {
   Serial2.begin(115200, SERIAL_8N1, HC12_RX, HC12_TX);
+  //(baudrate , ye kya nhi pata , reciever , transmteer)
   // Serial.println("[HC12] Interface initialized.");
 }
 
@@ -65,7 +66,7 @@ void parseHC12Line(const String& line) {
       String token = (i == line.length() - 1)
                      ? line.substring(lastIndex, i + 1)
                      : line.substring(lastIndex, i);
-      token.trim();
+      token.trim();//removes any unwanted data like spacebar or commas etc
       if (token.length() > 0 && field < 12)
         values[field++] = token.toDouble();
       lastIndex = i + 1;
@@ -89,13 +90,13 @@ void parseHC12Line(const String& line) {
 
 // --- Read and parse incoming HC-12 data ---
 void updateHC12() {
-  while (Serial2.available()) {
-    char c = Serial2.read();
+  while (Serial2.available()) {//jab tak data araha hai serial2 mei
+    char c = Serial2.read();// tab tak read karte jao
     if (c == '\n') {
       hc12_rxBuffer.trim();
       if (hc12_rxBuffer.length() > 0)
         parseHC12Line(hc12_rxBuffer);
-      hc12_rxBuffer = "";
+      hc12_rxBuffer = "";// phirse reset kar rahe reciver ko
     } else {
       hc12_rxBuffer += c;
     }
